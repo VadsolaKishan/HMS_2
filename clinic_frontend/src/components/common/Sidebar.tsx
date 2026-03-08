@@ -137,6 +137,11 @@ export const Sidebar = ({ isOpen, onToggle, isMobile = false }: SidebarProps) =>
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
+                    onClick={() => {
+                      if (isMobile) {
+                        onToggle();
+                      }
+                    }}
                     className={({ isActive }) => cn(
                       'group relative overflow-hidden flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground font-medium transition-all duration-300 hover:bg-muted/50 hover:text-foreground',
                       isActive && 'bg-primary/10 text-primary font-semibold shadow-sm hover:bg-primary/15'
