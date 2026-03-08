@@ -82,19 +82,21 @@ export const PatientDetail = () => {
     return (
         <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
             {/* Header */}
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={() => navigate('/patients')}
-                    className="p-2 rounded-xl hover:bg-muted transition-colors"
-                >
-                    <ArrowLeft className="h-6 w-6 text-muted-foreground" />
-                </button>
-                <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-foreground">Patient Details</h1>
-                    <p className="text-muted-foreground">View patient information</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/patients')}
+                        className="p-2 rounded-xl hover:bg-muted transition-colors"
+                    >
+                        <ArrowLeft className="h-6 w-6 text-muted-foreground" />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Patient Details</h1>
+                        <p className="text-muted-foreground">View patient information</p>
+                    </div>
                 </div>
                 {canManage && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 self-start sm:self-auto pl-14 sm:pl-0">
                         <button
                             onClick={() => navigate(`/patients/${patient.id}/edit`)}
                             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border hover:bg-muted transition-colors text-foreground font-medium"
