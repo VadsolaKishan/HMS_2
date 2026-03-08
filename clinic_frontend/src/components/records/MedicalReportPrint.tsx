@@ -51,7 +51,7 @@ export const MedicalReportPrint = () => {
                         V
                     </div>
                     <div>
-                        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Velora Care</h1>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-primary">Velora Care</h1>
                         <p className="text-sm text-gray-500">123 Health Street, Medicity</p>
                         <p className="text-sm text-gray-500">Phone: +1 234 567 890</p>
                     </div>

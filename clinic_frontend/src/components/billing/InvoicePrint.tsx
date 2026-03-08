@@ -51,16 +51,22 @@ export const InvoicePrint = () => {
     return (
         <div className="bg-white min-h-screen text-black p-8 max-w-[210mm] mx-auto">
             {/* Header */}
-            <div className="flex justify-between items-start border-b border-gray-300 pb-6 mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
-                    <p className="text-gray-600 mt-2">Hospital Management System</p>
-                    <p className="text-sm text-gray-500">123 Health Street, Medicity</p>
-                    <p className="text-sm text-gray-500">Phone: +1 234 567 890</p>
+            <div className="flex justify-between items-start border-b-2 border-primary/20 pb-6 mb-8">
+                <div className="flex items-center gap-4">
+                    {/* Logo Placeholder */}
+                    <div className="bg-primary text-white h-16 w-16 flex items-center justify-center rounded-lg text-2xl font-bold">
+                        V
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-primary">Velora Care</h1>
+                        <p className="text-sm text-gray-500">123 Health Street, Medicity</p>
+                        <p className="text-sm text-gray-500">Phone: +1 234 567 890</p>
+                    </div>
                 </div>
                 <div className="text-right">
-                    <h2 className="text-xl font-semibold text-gray-800">#{bill.invoice_number}</h2>
+                    <h2 className="text-xl font-bold text-primary">INVOICE</h2>
                     <p className="text-sm text-gray-600 mt-1">Date: {formatDate(bill.created_at)}</p>
+                    <p className="text-sm text-gray-600">ID: #{bill.invoice_number}</p>
                     {bill.case_type && (
                         <div className="mt-2 inline-block px-3 py-1 rounded border border-gray-300 text-sm font-medium">
                             {bill.case_type} CASE
