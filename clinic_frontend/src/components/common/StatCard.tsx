@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface StatCardProps {
   title: string;
@@ -10,6 +11,8 @@ interface StatCardProps {
     isPositive: boolean;
   };
   variant?: 'blue' | 'purple' | 'green' | 'orange' | 'gray';
+  onClick?: () => void;
+  to?: string;
 }
 
 const variantStyles = {
@@ -45,13 +48,24 @@ const variantStyles = {
   },
 };
 
-export const StatCard = ({ title, value, icon: Icon, trend, variant = 'blue' }: StatCardProps) => {
+export const StatCard = ({ title, value, icon: Icon, trend, variant = 'blue', onClick, to }: StatCardProps) => {
   const styles = variantStyles[variant];
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (to) {
+      navigate(to);
+    } else if (onClick) {
+      onClick();
+    }
+  };
 
   return (
     <div
+      onClick={handleClick}
       className={cn(
         'group relative overflow-hidden rounded-2xl bg-card p-6 shadow-sm transition-all duration-500 hover:shadow-lg hover:-translate-y-1.5 hover:shadow-primary/10 border border-border/60 hover:border-primary/30 z-10',
+        (onClick || to) && 'cursor-pointer',
         styles.border
       )}
     >

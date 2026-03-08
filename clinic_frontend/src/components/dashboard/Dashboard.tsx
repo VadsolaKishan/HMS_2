@@ -281,18 +281,21 @@ export const Dashboard = () => {
             value={stats.myAppointments.toString()}
             icon={Calendar}
             variant="blue"
+            to="/appointments"
           />
           <StatCard
             title="Available Doctors"
             value={stats.doctors.toString()}
             icon={Stethoscope}
             variant="green"
+            to="/doctors"
           />
           <StatCard
             title="Next Visit"
             value={stats.upcomingAppointment ? formatDate(stats.upcomingAppointment.appointment_date) : 'No upcoming visits'}
             icon={Clock}
             variant={stats.upcomingAppointment ? 'purple' : 'gray'}
+            to="/appointments"
           />
         </div>
 
@@ -400,24 +403,28 @@ export const Dashboard = () => {
             value={stats.appointmentsToday.toString()}
             icon={Calendar}
             variant="purple"
+            to="/appointments"
           />
           <StatCard
             title="Total Patients Seen"
             value={stats.myPatients.toString()}
             icon={Users}
             variant="blue"
+            to="/patients"
           />
           <StatCard
             title="Total Appointments"
             value={stats.totalAppointments.toString()}
             icon={ClipboardList}
             variant="orange"
+            to="/appointments"
           />
           <StatCard
             title="Next Appointment"
             value={stats.upcomingAppointment ? formatTime(stats.upcomingAppointment.appointment_time) : 'None'}
             icon={Clock}
             variant={stats.upcomingAppointment ? "green" : "gray"}
+            to="/appointments"
           />
         </div>
 
@@ -590,36 +597,38 @@ export const Dashboard = () => {
           icon={Wallet}
           variant="green"
           trend={{ value: 10, isPositive: true }}
-        />
-        <StatCard
-          title="Appointments Today"
-          value={stats.appointmentsToday.toLocaleString()}
-          icon={Calendar}
-          variant="purple"
-          trend={{ value: 5, isPositive: true }}
-        />
-        <StatCard
-          title="Total Patients"
-          value={stats.patients.toLocaleString()}
-          icon={Users}
-          variant="blue"
-          trend={{ value: 12, isPositive: true }}
-        />
-        <StatCard
-          title="Available Beds"
-          value={`${stats.availableBeds} / ${stats.totalBeds}`}
-          icon={BedDouble}
-          variant="orange"
-          trend={{ value: 2, isPositive: false }}
-        />
-      </div>
+            to="/billing"
+          />
+          <StatCard
+            title="Appointments Today"
+            value={stats.appointmentsToday.toLocaleString()}
+            icon={Calendar}
+            variant="purple"
+            trend={{ value: 5, isPositive: true }}
+            to="/appointments"
+          />
+          <StatCard
+            title="Total Patients"
+            value={stats.patients.toLocaleString()}
+            icon={Users}
+            variant="blue"
+            trend={{ value: 12, isPositive: true }}
+            to="/patients"
+          />
+          <StatCard
+            title="Available Beds"
+            value={`${stats.availableBeds} / ${stats.totalBeds}`}
+            icon={BedDouble}
+            variant="orange"
+            trend={{ value: 2, isPositive: false }}
+            to="/beds"
+          />
+        </div>
 
-      {/* Main Charts Section */}
-      <div className="grid gap-6 lg:grid-cols-3 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-
-        {/* Patient Flow Chart */}
-        <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+        {/* Main Charts Section */}
+        <div className="grid gap-6 lg:grid-cols-3 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="font-semibold text-lg text-foreground">Patient Flow (Last 7 Days)</h3>
               <p className="text-sm text-muted-foreground">Daily appointment volume</p>
