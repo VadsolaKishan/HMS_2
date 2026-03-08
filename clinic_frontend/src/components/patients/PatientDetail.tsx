@@ -127,7 +127,7 @@ export const PatientDetail = () => {
                             <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <User className="h-4 w-4" />
-                                    {calculateAge(patient.date_of_birth)} years old
+                                      {patient.date_of_birth ? `${calculateAge(patient.date_of_birth)} years old` : 'Age not provided'}
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <User className="h-4 w-4" />
