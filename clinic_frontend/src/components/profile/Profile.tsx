@@ -114,7 +114,6 @@ export const Profile = () => {
             toast({
                 title: "Profile Updated",
                 description: "Your information has been successfully saved.",
-                className: "bg-success border-success text-success-foreground"
             });
             setIsEditing(false);
         } catch (error) {
