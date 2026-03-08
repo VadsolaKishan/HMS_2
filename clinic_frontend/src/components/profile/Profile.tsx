@@ -113,7 +113,7 @@ export const Profile = () => {
             toast({
                 title: "Profile Updated",
                 description: "Your information has been successfully saved.",
-                className: "bg-success/20 border-success/50 text-success-text"
+                className: "bg-success border-success text-success-foreground"
             });
             setIsEditing(false);
         } catch (error) {
