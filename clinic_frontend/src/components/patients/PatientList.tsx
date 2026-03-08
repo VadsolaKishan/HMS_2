@@ -177,7 +177,7 @@ export const PatientList = () => {
                       {patient.uhid}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {calculateAge(patient.date_of_birth)} years old
+                      {patient.date_of_birth ? `${calculateAge(patient.date_of_birth)} years old` : 'Age not provided'}
                     </p>
                   </div>
                 </div>
@@ -201,7 +201,9 @@ export const PatientList = () => {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span className="text-sm">{formatDate(patient.date_of_birth)}</span>
+                  <span className="text-sm">
+                    {patient.date_of_birth ? formatDate(patient.date_of_birth) : 'Not provided'}
+                  </span>
                 </div>
                 {patient.emergency_contact && (
                   <div className="flex items-center gap-2 text-muted-foreground">
