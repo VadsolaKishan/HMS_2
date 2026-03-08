@@ -18,8 +18,8 @@ class Patient(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="patient_profile"
     )
-    date_of_birth = models.DateField()
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    date_of_birth = models.DateField(blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
     blood_group = models.CharField(
         max_length=3, choices=BLOOD_GROUP_CHOICES, blank=True, null=True
     )

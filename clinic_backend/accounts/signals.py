@@ -16,8 +16,8 @@ def create_patient_profile(sender, instance, created, **kwargs):
         if not Patient.objects.filter(user=instance).exists():
             Patient.objects.create(
                 user=instance,
-                date_of_birth=timezone.now().date(),
-                gender="M",
+                date_of_birth=None,
+                gender=None,
             )
 
 
