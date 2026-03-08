@@ -5,6 +5,7 @@ import { Breadcrumbs } from '@/components/common/Breadcrumbs';
 import { authService } from '@/services/authService';
 import { patientService, Patient } from '@/services/patientService';
 import { useToast } from '@/hooks/use-toast';
+import { formatDate } from '@/utils/helpers';
 
 export const Profile = () => {
     const { user, refreshUser } = useAuth();
@@ -284,7 +285,7 @@ export const Profile = () => {
                                         />
                                     ) : (
                                         <div className="p-3 rounded-xl bg-muted/30 border border-transparent text-foreground font-medium min-h-[46px] flex items-center">
-                                            {patientData?.date_of_birth || 'Not provided'}
+                                            {patientData?.date_of_birth ? formatDate(patientData.date_of_birth) : 'Not provided'}
                                         </div>
                                     )}
                                 </div>

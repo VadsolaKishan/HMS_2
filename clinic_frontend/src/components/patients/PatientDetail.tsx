@@ -154,7 +154,7 @@ export const PatientDetail = () => {
                                 <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
                                 <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
                                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                                    {formatDate(patient.date_of_birth)}
+                                    {patient.date_of_birth ? formatDate(patient.date_of_birth) : "Not provided"}
                                 </div>
                             </div>
                             <div className="space-y-1">
