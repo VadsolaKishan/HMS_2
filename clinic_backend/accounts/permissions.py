@@ -79,3 +79,16 @@ class IsAdminOrDoctor(BasePermission):
             and request.user.is_authenticated
             and request.user.role in ["ADMIN", "DOCTOR"]
         )
+
+
+class IsLabTechnician(BasePermission):
+    """
+    Permission check for LAB_TECHNICIAN role
+    """
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == "LAB_TECHNICIAN"
+        )

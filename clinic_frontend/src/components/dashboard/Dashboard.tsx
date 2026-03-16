@@ -12,7 +12,10 @@ import {
   Activity,
   FileText,
   Clock,
-  ClipboardList
+  ClipboardList,
+  FlaskConical,
+  CheckCircle2,
+  Eye
 } from 'lucide-react';
 import {
   AreaChart,
@@ -35,6 +38,7 @@ import { patientService } from '@/services/patientService';
 import { doctorService } from '@/services/doctorService';
 import { billingService } from '@/services/billingService';
 import { bedService } from '@/services/bedService';
+import { labService, LabRequest } from '@/services/labService';
 import { formatDate, formatTime, capitalizeFirst, formatCurrency } from '@/utils/helpers';
 import { ROLES } from '@/utils/constants';
 import { cn } from '@/lib/utils';
@@ -62,13 +66,31 @@ export const Dashboard = () => {
   const [bedOccupancyData, setBedOccupancyData] = useState<any[]>([]);
   const [patientFlowData, setPatientFlowData] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
+  const [labRequests, setLabRequests] = useState<LabRequest[]>([]);
+  const [labStats, setLabStats] = useState({ requested: 0, visited: 0, completed: 0, total: 0 });
 
   const isPatient = user?.role === ROLES.PATIENT;
   const isDoctor = user?.role === ROLES.DOCTOR;
+  const isLabTechnician = user?.role === ROLES.LAB_TECHNICIAN;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        if (isLabTechnician) {
+          // Lab Technician View Data Fetching
+          const requests = await labService.getRequests();
+          const requestsList = Array.isArray(requests) ? requests : [];
+
+          const requested = requestsList.filter(r => r.status === 'REQUESTED').length;
+          const visited = requestsList.filter(r => r.status === 'VISITED').length;
+          const completed = requestsList.filter(r => r.status === 'COMPLETED').length;
+
+          setLabStats({ requested, visited, completed, total: requestsList.length });
+          setLabRequests(requestsList.slice(0, 5));
+          setIsLoading(false);
+          return;
+        }
+
         if (isPatient) {
           // Patient View Data Fetching
           const [appointments, doctorsList] = await Promise.all([
@@ -239,7 +261,7 @@ export const Dashboard = () => {
     };
 
     fetchData();
-  }, [user, isPatient, isDoctor]);
+  }, [user, isPatient, isDoctor, isLabTechnician]);
 
   if (isLoading) return <PageLoader />;
 
@@ -554,6 +576,252 @@ export const Dashboard = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Lab Technician Dashboard View ---
+  if (isLabTechnician) {
+    const statusConfig: Record<string, { label: string; class: string; icon: any }> = {
+      REQUESTED: { label: 'Pending', class: 'bg-orange-100 text-orange-700', icon: Clock },
+      VISITED: { label: 'In Progress', class: 'bg-blue-100 text-blue-700', icon: Eye },
+      COMPLETED: { label: 'Completed', class: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 },
+    };
+
+    return (
+      <div className="space-y-6 animate-fade-in pb-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <Breadcrumbs />
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Lab Technician Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back, {user?.first_name || 'Lab Technician'}!</p>
+          </div>
+          <button
+            onClick={() => navigate('/lab-requests')}
+            className="btn-gradient flex items-center gap-2 shadow-lg shadow-blue-500/20"
+          >
+            <FlaskConical className="h-4 w-4" />
+            <span>View All Requests</span>
+          </button>
+        </div>
+
+        {/* Lab Stats Grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <StatCard
+            title="Pending Requests"
+            value={labStats.requested.toString()}
+            icon={Clock}
+            variant="orange"
+            to="/lab-requests"
+          />
+          <StatCard
+            title="In Progress"
+            value={labStats.visited.toString()}
+            icon={Eye}
+            variant="blue"
+            to="/lab-requests"
+          />
+          <StatCard
+            title="Completed Today"
+            value={labStats.completed.toString()}
+            icon={CheckCircle2}
+            variant="green"
+            to="/lab-requests"
+          />
+          <StatCard
+            title="Total Requests"
+            value={labStats.total.toString()}
+            icon={FlaskConical}
+            variant="purple"
+            to="/lab-requests"
+          />
+        </div>
+
+        {/* Recent Lab Requests */}
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-lg">Recent Lab Requests</h3>
+              <p className="text-sm text-muted-foreground">Manage pending lab tests</p>
+            </div>
+            <button onClick={() => navigate('/lab-requests')} className="text-sm text-primary hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-3 w-3" />
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-left">
+                <tr>
+                  <th className="px-6 py-3 text-muted-foreground font-medium">Patient</th>
+                  <th className="px-6 py-3 text-muted-foreground font-medium">Test</th>
+                  <th className="px-6 py-3 text-muted-foreground font-medium">Doctor</th>
+                  <th className="px-6 py-3 text-muted-foreground font-medium">Date</th>
+                  <th className="px-6 py-3 text-muted-foreground font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {labRequests.length > 0 ? (
+                  labRequests.map((req) => {
+                    const sc = statusConfig[req.status];
+                    return (
+                      <tr
+                        key={req.id}
+                        onClick={() => navigate('/lab-requests')}
+                        className="hover:bg-muted/30 transition-colors cursor-pointer"
+                      >
+                        <td className="px-6 py-4">
+                          <div>
+                            <p className="font-medium">{req.patient_name}</p>
+                            <p className="text-xs text-muted-foreground">{req.patient_uhid}</p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{req.test_name}</td>
+                        <td className="px-6 py-4 text-muted-foreground">Dr. {req.doctor_name}</td>
+                        <td className="px-6 py-4 text-muted-foreground">{formatDate(req.created_at)}</td>
+                        <td className="px-6 py-4">
+                          <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-medium', sc?.class)}>
+                            {sc?.label || req.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                      No lab requests found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Quick Stats Chart */}
+        <div className="grid gap-6 lg:grid-cols-3 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm flex flex-col">
+            <h3 className="font-semibold text-lg text-foreground mb-1">Request Distribution</h3>
+            <p className="text-sm text-muted-foreground mb-6">Current workload status</p>
+
+            <div className="flex-1 min-h-[200px] relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Pending', value: labStats.requested, color: '#f97316' },
+                      { name: 'In Progress', value: labStats.visited, color: '#3b82f6' },
+                      { name: 'Completed', value: labStats.completed, color: '#10b981' },
+                    ].filter(d => d.value > 0)}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {[
+                      { name: 'Pending', value: labStats.requested, color: '#f97316' },
+                      { name: 'In Progress', value: labStats.visited, color: '#3b82f6' },
+                      { name: 'Completed', value: labStats.completed, color: '#10b981' },
+                    ].filter(d => d.value > 0).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{labStats.total}</p>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-orange-500" />
+                  <span className="text-muted-foreground">Pending</span>
+                </div>
+                <span className="font-medium">{labStats.requested}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                  <span className="text-muted-foreground">In Progress</span>
+                </div>
+                <span className="font-medium">{labStats.visited}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                  <span className="text-muted-foreground">Completed</span>
+                </div>
+                <span className="font-medium">{labStats.completed}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="font-semibold text-lg mb-4">Quick Actions</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <button
+                onClick={() => navigate('/lab-requests')}
+                className="p-4 rounded-xl border border-border bg-orange-50 hover:bg-orange-100 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Clock className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <span className="font-semibold text-orange-900">Pending Requests</span>
+                </div>
+                <p className="text-sm text-orange-700">{labStats.requested} tests waiting for processing</p>
+              </button>
+
+              <button
+                onClick={() => navigate('/lab-requests')}
+                className="p-4 rounded-xl border border-border bg-blue-50 hover:bg-blue-100 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Eye className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <span className="font-semibold text-blue-900">Mark Visit</span>
+                </div>
+                <p className="text-sm text-blue-700">Record patient arrivals for lab tests</p>
+              </button>
+
+              <button
+                onClick={() => navigate('/lab-requests')}
+                className="p-4 rounded-xl border border-border bg-emerald-50 hover:bg-emerald-100 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <FileText className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <span className="font-semibold text-emerald-900">Upload Reports</span>
+                </div>
+                <p className="text-sm text-emerald-700">{labStats.visited} tests ready for report upload</p>
+              </button>
+
+              <button
+                onClick={() => navigate('/lab-requests')}
+                className="p-4 rounded-xl border border-border bg-purple-50 hover:bg-purple-100 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <FlaskConical className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <span className="font-semibold text-purple-900">View All</span>
+                </div>
+                <p className="text-sm text-purple-700">Manage all laboratory requests</p>
+              </button>
+            </div>
           </div>
         </div>
       </div>

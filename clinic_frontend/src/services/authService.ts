@@ -6,7 +6,7 @@ export interface User {
   first_name: string;
   last_name: string;
   phone: string;
-  role: 'ADMIN' | 'DOCTOR' | 'STAFF' | 'PATIENT';
+  role: 'ADMIN' | 'DOCTOR' | 'STAFF' | 'PATIENT' | 'LAB_TECHNICIAN';
   is_active: boolean;
   full_name: string;
   patient_id?: number;

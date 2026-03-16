@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { recordService } from '@/services/recordService';
+import { labService, LabTestType } from '@/services/labService';
 import { ButtonLoader } from '@/components/common/Loader';
 import { toast } from '@/hooks/use-toast';
 
@@ -25,7 +26,28 @@ export const PrescriptionForm = ({
     bed_required: false,
     expected_bed_days: '',
   });
+  const [labTestRequired, setLabTestRequired] = useState(false);
+  const [selectedLabTests, setSelectedLabTests] = useState<number[]>([]);
+  const [availableTests, setAvailableTests] = useState<LabTestType[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const tests = await labService.getTestTypes();
+        setAvailableTests(tests);
+      } catch (error) {
+        console.error('Failed to fetch lab test types:', error);
+      }
+    };
+    fetchTests();
+  }, []);
+
+  const toggleLabTest = (testId: number) => {
+    setSelectedLabTests((prev) =>
+      prev.includes(testId) ? prev.filter((id) => id !== testId) : [...prev, testId]
+    );
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -38,6 +60,11 @@ export const PrescriptionForm = ({
         newErrors.expected_bed_days = 'Please enter a valid number of days';
       }
     }
+
+    if (labTestRequired && selectedLabTests.length === 0) {
+      newErrors.lab_tests = 'Please select at least one lab test';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -48,7 +75,7 @@ export const PrescriptionForm = ({
 
     setIsSubmitting(true);
     try {
-      const prescriptionData = {
+      const prescriptionData: any = {
         appointment: appointmentId,
         diagnosis: formData.diagnosis,
         medications: formData.medications,
@@ -56,6 +83,10 @@ export const PrescriptionForm = ({
         bed_required: formData.bed_required,
         expected_bed_days: formData.bed_required ? Number(formData.expected_bed_days) : null,
       };
+
+      if (labTestRequired && selectedLabTests.length > 0) {
+        prescriptionData.lab_test_ids = selectedLabTests;
+      }
 
       await recordService.create(prescriptionData);
       toast({
@@ -119,7 +150,7 @@ export const PrescriptionForm = ({
             }`}
         />
         {errors.diagnosis && (
-          <p className="mt-1 text-sm text-destructive">⚠ {errors.diagnosis}</p>
+          <p className="mt-1 text-sm text-destructive">{errors.diagnosis}</p>
         )}
       </div>
 
@@ -139,7 +170,7 @@ export const PrescriptionForm = ({
             }`}
         />
         {errors.medications && (
-          <p className="mt-1 text-sm text-destructive">⚠ {errors.medications}</p>
+          <p className="mt-1 text-sm text-destructive">{errors.medications}</p>
         )}
       </div>
 
@@ -159,7 +190,68 @@ export const PrescriptionForm = ({
             }`}
         />
         {errors.instructions && (
-          <p className="mt-1 text-sm text-destructive">⚠ {errors.instructions}</p>
+          <p className="mt-1 text-sm text-destructive">{errors.instructions}</p>
+        )}
+      </div>
+
+      {/* Lab Test Requirement */}
+      <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 space-y-4">
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="lab_test_required"
+            checked={labTestRequired}
+            onChange={(e) => {
+              setLabTestRequired(e.target.checked);
+              if (!e.target.checked) setSelectedLabTests([]);
+            }}
+            className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
+          />
+          <label htmlFor="lab_test_required" className="font-medium text-foreground cursor-pointer">
+            Lab Test Required?
+          </label>
+        </div>
+
+        {labTestRequired && (
+          <div className="pl-8 animate-in fade-in slide-in-from-top-2 space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              Select Tests <span className="text-destructive">*</span>
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {availableTests.map((test) => (
+                <label
+                  key={test.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    selectedLabTests.includes(test.id)
+                      ? 'bg-purple-100 border-purple-400'
+                      : 'bg-white border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedLabTests.includes(test.id)}
+                    onChange={() => toggleLabTest(test.id)}
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{test.test_name}</p>
+                    <p className="text-xs text-muted-foreground">{test.description}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+            {availableTests.length === 0 && (
+              <p className="text-sm text-muted-foreground">No lab tests available. Contact admin to add test types.</p>
+            )}
+            {errors.lab_tests && (
+              <p className="text-sm text-destructive">{errors.lab_tests}</p>
+            )}
+            {selectedLabTests.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {selectedLabTests.length} test(s) selected. Lab requests will be created when prescription is submitted.
+              </p>
+            )}
+          </div>
         )}
       </div>
 
@@ -194,7 +286,7 @@ export const PrescriptionForm = ({
                 }`}
             />
             {errors.expected_bed_days && (
-              <p className="mt-1 text-sm text-destructive">⚠ {errors.expected_bed_days}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.expected_bed_days}</p>
             )}
             <p className="text-xs text-muted-foreground mt-1">
               This request will be sent to the admin for bed allocation.

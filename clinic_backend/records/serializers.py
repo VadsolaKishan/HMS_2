@@ -17,6 +17,9 @@ class PrescriptionSerializer(serializers.ModelSerializer):
     billing_invoice = serializers.SerializerMethodField()
     patient_gender = serializers.CharField(source="patient.gender", read_only=True)
     patient_age = serializers.SerializerMethodField()
+    lab_test_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False, default=[]
+    )
 
     class Meta:
         model = Prescription
@@ -41,6 +44,7 @@ class PrescriptionSerializer(serializers.ModelSerializer):
             "updated_at",
             "bed_required",
             "expected_bed_days",
+            "lab_test_ids",
         ]
         read_only_fields = [
             "created_at",
@@ -100,6 +104,8 @@ class PrescriptionSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Auto-populate patient and doctor from appointment"""
+        lab_test_ids = validated_data.pop("lab_test_ids", [])
+
         appointment = validated_data.get("appointment")
         if appointment:
             validated_data["patient"] = appointment.patient
@@ -120,5 +126,22 @@ class PrescriptionSerializer(serializers.ModelSerializer):
                 expected_bed_days=prescription.expected_bed_days,
                 status="PENDING",
             )
+
+        # Create Lab Requests
+        if lab_test_ids:
+            from laboratory.models import LabRequest, LabTestType
+
+            for test_id in lab_test_ids:
+                try:
+                    test = LabTestType.objects.get(id=test_id)
+                    LabRequest.objects.create(
+                        patient=prescription.patient,
+                        doctor=prescription.doctor,
+                        appointment=prescription.appointment,
+                        test=test,
+                        status="REQUESTED",
+                    )
+                except LabTestType.DoesNotExist:
+                    pass
 
         return prescription

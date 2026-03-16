@@ -167,6 +167,12 @@ export const BillingDetail = () => {
                                         </div>
                                     </div>
                                 )}
+                                {Number(bill.lab_charge) > 0 && (
+                                    <div className="flex justify-between py-2 border-b border-border border-dashed">
+                                        <span className="text-muted-foreground">Laboratory Charges</span>
+                                        <span className="font-medium">{formatCurrency(bill.lab_charge)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between py-2 text-sm">
                                     <span className="text-muted-foreground">Discount ({bill.discount_percentage}%)</span>
                                     <span className="font-medium text-success">-{formatCurrency(bill.discount_amount)}</span>

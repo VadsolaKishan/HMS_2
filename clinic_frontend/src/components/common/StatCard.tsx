@@ -35,10 +35,10 @@ const variantStyles = {
     trend: 'text-emerald-600',
   },
   orange: {
-    border: 'border-l-4 border-warning',
-    text: 'text-warning-foreground',
-    iconBg: 'bg-warning/15 text-warning-foreground',
-    trend: 'text-warning-foreground',
+    border: 'border-l-4 border-orange-500',
+    text: 'text-orange-700',
+    iconBg: 'bg-orange-100 text-orange-600',
+    trend: 'text-orange-700',
   },
   gray: {
     border: 'border-l-4 border-gray-500',

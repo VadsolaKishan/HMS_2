@@ -32,6 +32,9 @@ import { BillingForm } from "@/components/billing/BillingForm";
 import { InvoicePrint } from "@/components/billing/InvoicePrint";
 import { NotificationList } from "@/components/notifications/NotificationList";
 import { SupportList } from "@/components/support/SupportList";
+import { LabRequestList } from "@/components/laboratory/LabRequestList";
+import { LabTestTypeList } from "@/components/laboratory/LabTestTypeList";
+import { MyLabReports } from "@/components/laboratory/MyLabReports";
 import NotFound from "./pages/NotFound";
 import { doctorService } from "@/services/doctorService";
 import { patientService } from "@/services/patientService";
@@ -251,6 +254,17 @@ const App = () => (
             {/* Bed Management Route */}
             <Route element={<PrivateRoute><DashboardLayout title="Bed Management" /></PrivateRoute>}>
               <Route path="/beds" element={<BedDashboard />} />
+            </Route>
+
+            {/* Laboratory Routes */}
+            <Route element={<PrivateRoute allowedRoles={['ADMIN', 'LAB_TECHNICIAN']}><DashboardLayout title="Lab Requests" /></PrivateRoute>}>
+              <Route path="/lab-requests" element={<LabRequestList />} />
+            </Route>
+            <Route element={<PrivateRoute allowedRoles={['ADMIN']}><DashboardLayout title="Lab Test Types" /></PrivateRoute>}>
+              <Route path="/lab-test-types" element={<LabTestTypeList />} />
+            </Route>
+            <Route element={<PrivateRoute allowedRoles={['PATIENT']}><DashboardLayout title="My Lab Reports" /></PrivateRoute>}>
+              <Route path="/my-lab-reports" element={<MyLabReports />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

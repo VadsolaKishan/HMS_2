@@ -38,6 +38,7 @@ class BillingSerializer(serializers.ModelSerializer):
             "bed_charge",
             "bed_days",
             "bed_charge_per_day",
+            "lab_charge",
             "discount_percentage",
             "discount_amount",
             "final_amount",

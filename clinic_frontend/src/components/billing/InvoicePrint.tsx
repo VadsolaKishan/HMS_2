@@ -119,6 +119,12 @@ export const InvoicePrint = () => {
                                 <td className="py-4 text-right font-medium">{formatCurrency(bill.bed_charge)}</td>
                             </tr>
                         )}
+                        {Number(bill.lab_charge) > 0 && (
+                            <tr>
+                                <td className="py-4 text-gray-800">Laboratory Charges</td>
+                                <td className="py-4 text-right font-medium">{formatCurrency(bill.lab_charge)}</td>
+                            </tr>
+                        )}
 
                         {/* Summary Section within Table or separate */}
                     </tbody>

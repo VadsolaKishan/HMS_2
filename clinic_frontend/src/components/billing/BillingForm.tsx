@@ -282,6 +282,13 @@ export const BillingForm = () => {
                     </div>
                   )}
 
+                  {feeDetails.lab_charge > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Laboratory Charges:</span>
+                      <span>{formatCurrency(feeDetails.lab_charge)}</span>
+                    </div>
+                  )}
+
                   <div className="border-t border-border pt-2 flex justify-between text-sm font-medium">
                     <span>Gross Amount:</span>
                     <span>{formatCurrency(feeDetails.gross_amount)}</span>

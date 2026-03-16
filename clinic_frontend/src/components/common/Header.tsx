@@ -49,7 +49,7 @@ export const Header = ({ title, onMenuClick }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex min-h-16 py-2 items-center justify-between border-b border-border/50 bg-card/80 backdrop-blur-xl px-4 sm:px-6 shadow-sm transition-all duration-300">
+    <header className="sticky top-0 z-40 flex min-h-16 py-2 items-center justify-between border-b border-border/50 bg-card/80 backdrop-blur-xl px-4 sm:px-6 shadow-sm transition-all duration-300 flex-shrink-0">
       <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
         <button
           onClick={onMenuClick}

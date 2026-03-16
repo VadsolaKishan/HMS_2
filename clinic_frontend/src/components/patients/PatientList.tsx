@@ -185,19 +185,17 @@ export const PatientList = () => {
 
               {/* Details */}
               <div className="space-y-3 mb-6">
-                {patient.user_email && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="h-4 w-4" />
-                    <span className="text-sm truncate">{patient.user_email}</span>
+                    <span className="text-sm truncate">{patient.user_email || 'Not provided'}</span>
                   </div>
-                )}
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <User className="h-4 w-4" />
-                  <span className="text-sm">{GENDERS.find(g => g.value === patient.gender)?.label || patient.gender}</span>
+                  <span className="text-sm">{GENDERS.find(g => g.value === patient.gender)?.label || patient.gender || 'Not provided'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Droplet className="h-4 w-4 text-destructive" />
-                  <span className="text-sm font-medium">{patient.blood_group}</span>
+                  <span className="text-sm font-medium">{patient.blood_group || 'Not provided'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
@@ -205,12 +203,10 @@ export const PatientList = () => {
                     {patient.date_of_birth ? formatDate(patient.date_of_birth) : 'Not provided'}
                   </span>
                 </div>
-                {patient.emergency_contact && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="h-4 w-4" />
-                    <span className="text-sm">{patient.emergency_contact}</span>
+                    <span className="text-sm">{patient.emergency_contact || 'Not provided'}</span>
                   </div>
-                )}
               </div>
 
               {/* Actions */}

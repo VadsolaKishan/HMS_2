@@ -38,7 +38,7 @@ export const DashboardLayout = ({ title }: DashboardLayoutProps) => {
       {/* Main Content */}
       <div
         className={cn(
-          'transition-all duration-300 relative z-10',
+          'transition-all duration-300 relative z-10 flex flex-col h-screen',
           sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'
         )}
       >
@@ -46,7 +46,7 @@ export const DashboardLayout = ({ title }: DashboardLayoutProps) => {
           title={title}
           onMenuClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
         />
-        <main className="p-4 sm:p-6 flex-1 overflow-x-hidden">
+        <main className="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>

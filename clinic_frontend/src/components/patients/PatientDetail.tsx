@@ -12,11 +12,14 @@ import {
     AlertCircle,
     Edit,
     Trash2,
+    FlaskConical,
+    Download,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { PageLoader } from '@/components/common/Loader';
 import { ConfirmModal } from '@/components/common/Modal';
 import { patientService, Patient } from '@/services/patientService';
+import { labService, LabRequest } from '@/services/labService';
 import { calculateAge, formatDate, getInitials } from '@/utils/helpers';
 import { ROLES, GENDERS } from '@/utils/constants';
 import { toast } from '@/hooks/use-toast';
@@ -26,16 +29,22 @@ export const PatientDetail = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [patient, setPatient] = useState<Patient | null>(null);
+    const [labReports, setLabReports] = useState<LabRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [activeTab, setActiveTab] = useState<'info' | 'lab'>('info');
 
     useEffect(() => {
-        const fetchPatient = async () => {
+        const fetchData = async () => {
             if (!id) return;
             try {
-                const data = await patientService.getById(parseInt(id));
-                setPatient(data);
+                const [patientData, reports] = await Promise.all([
+                    patientService.getById(parseInt(id)),
+                    labService.getPatientReports(parseInt(id)).catch(() => []),
+                ]);
+                setPatient(patientData);
+                setLabReports(reports);
             } catch (error) {
                 console.error('Failed to fetch patient:', error);
                 toast({
@@ -49,7 +58,7 @@ export const PatientDetail = () => {
             }
         };
 
-        fetchPatient();
+        fetchData();
     }, [id, navigate]);
 
     const handleDelete = async () => {
@@ -131,84 +140,146 @@ export const PatientDetail = () => {
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <User className="h-4 w-4" />
-                                    {GENDERS.find(g => g.value === patient.gender)?.label || patient.gender}
+                                    {GENDERS.find(g => g.value === patient.gender)?.label || patient.gender || 'Not provided'}
                                 </span>
-                                {patient.blood_group && (
-                                    <span className="flex items-center gap-1 text-red-500 font-medium bg-red-500/10 px-2 py-0.5 rounded-md">
-                                        <Droplet className="h-4 w-4" />
-                                        {patient.blood_group}
-                                    </span>
-                                )}
+                                <span className={`flex items-center gap-1 ${patient.blood_group ? 'text-red-500 font-medium bg-red-500/10 px-2 py-0.5 rounded-md' : ''}`}>
+                                    <Droplet className="h-4 w-4" />
+                                    {patient.blood_group || 'Not provided'}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                {/* Tabs */}
+                <div className="flex border-b border-border">
+                    <button
+                        onClick={() => setActiveTab('info')}
+                        className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'info' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <span className="flex items-center gap-2"><User className="h-4 w-4" /> Information</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('lab')}
+                        className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'lab' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <span className="flex items-center gap-2"><FlaskConical className="h-4 w-4" /> Lab Reports ({labReports.length})</span>
+                    </button>
+                </div>
+
                 <div className="p-8 space-y-8">
-                    {/* Personal Information */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                            <User className="h-5 w-5 text-primary" />
-                            Personal Information
-                        </h3>
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
-                                <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                                    {patient.date_of_birth ? formatDate(patient.date_of_birth) : "Not provided"}
+                    {activeTab === 'info' ? (
+                        <>
+                            {/* Personal Information */}
+                            <div>
+                                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                                    <User className="h-5 w-5 text-primary" />
+                                    Personal Information
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
+                                        <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                            {patient.date_of_birth ? formatDate(patient.date_of_birth) : "Not provided"}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium text-muted-foreground">Contact Number</p>
+                                        <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
+                                            <Phone className="h-4 w-4 text-muted-foreground" />
+                                            {patient.user_phone || 'Not provided'}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium text-muted-foreground">Emergency Contact</p>
+                                        <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
+                                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                                            {patient.emergency_contact || 'Not provided'}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1 md:col-span-2">
+                                        <p className="text-sm font-medium text-muted-foreground">Address</p>
+                                        <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
+                                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                                            {patient.address || 'Not provided'}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium text-muted-foreground">Contact Number</p>
-                                <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
-                                    <Phone className="h-4 w-4 text-muted-foreground" />
-                                    {patient.user_phone || 'Not provided'}
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium text-muted-foreground">Emergency Contact</p>
-                                <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
-                                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                    {patient.emergency_contact || 'Not provided'}
-                                </div>
-                            </div>
-                            <div className="space-y-1 md:col-span-2">
-                                <p className="text-sm font-medium text-muted-foreground">Address</p>
-                                <div className="p-3 rounded-lg border border-border bg-background text-foreground flex items-center gap-2">
-                                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                                    {patient.address}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div className="border-t border-border" />
+                            <div className="border-t border-border" />
 
-                    {/* Medical Information */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                            <FileText className="h-5 w-5 text-primary" />
-                            Medical Information
-                        </h3>
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">Medical History</p>
-                                <div className="p-4 rounded-xl bg-muted/30 text-foreground min-h-[100px] text-sm leading-relaxed">
-                                    {patient.medical_history || <span className="text-muted-foreground italic">No medical history recorded.</span>}
+                            {/* Medical Information */}
+                            <div>
+                                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-primary" />
+                                    Medical Information
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium text-muted-foreground">Medical History</p>
+                                        <div className="p-4 rounded-xl bg-muted/30 text-foreground min-h-[100px] text-sm leading-relaxed">
+                                            {patient.medical_history || <span className="text-muted-foreground italic">No medical history recorded.</span>}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                            Allergies
+                                            {patient.allergies && <AlertCircle className="h-4 w-4 text-destructive" />}
+                                        </p>
+                                        <div className={`p-4 rounded-xl text-foreground min-h-[100px] text-sm leading-relaxed ${patient.allergies ? 'bg-destructive/5 border border-destructive/20' : 'bg-muted/30'}`}>
+                                            {patient.allergies || <span className="text-muted-foreground italic">No allergies recorded.</span>}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    Allergies
-                                    {patient.allergies && <AlertCircle className="h-4 w-4 text-destructive" />}
-                                </p>
-                                <div className={`p-4 rounded-xl text-foreground min-h-[100px] text-sm leading-relaxed ${patient.allergies ? 'bg-destructive/5 border border-destructive/20' : 'bg-muted/30'}`}>
-                                    {patient.allergies || <span className="text-muted-foreground italic">No allergies recorded.</span>}
+                        </>
+                    ) : (
+                        /* Lab Reports Tab */
+                        <div>
+                            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                                <FlaskConical className="h-5 w-5 text-primary" />
+                                Lab Reports
+                            </h3>
+                            {labReports.length > 0 ? (
+                                <div className="space-y-4">
+                                    {labReports.map((report) => (
+                                        <div key={report.id} className="p-4 rounded-xl border border-border bg-muted/20 hover:bg-muted/30 transition-colors">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="space-y-1">
+                                                    <p className="font-medium text-foreground">{report.test_name}</p>
+                                                    <p className="text-sm text-muted-foreground">Requested by Dr. {report.doctor_name}</p>
+                                                    <p className="text-xs text-muted-foreground">{formatDate(report.created_at)}</p>
+                                                    {report.report?.notes && (
+                                                        <p className="text-sm text-muted-foreground mt-2 p-2 bg-muted/30 rounded-lg">
+                                                            <strong>Notes:</strong> {report.report.notes}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {report.report?.report_file && (
+                                                    <a
+                                                        href={report.report.report_file}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shrink-0"
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                        View Report
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="text-center py-12 text-muted-foreground">
+                                    <FlaskConical className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                                    <p>No lab reports available for this patient.</p>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
 
                     <div className="border-t border-border pt-4">
                         <p className="text-xs text-muted-foreground flex items-center gap-1">

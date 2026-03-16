@@ -13,6 +13,8 @@ import {
   Activity,
   Building2,
   BedDouble,
+  FlaskConical,
+  TestTubes,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -29,7 +31,7 @@ const menuItems = [
     title: 'Dashboard',
     icon: LayoutDashboard,
     path: '/dashboard',
-    roles: [ROLES.ADMIN, ROLES.DOCTOR, ROLES.STAFF, ROLES.PATIENT],
+    roles: [ROLES.ADMIN, ROLES.DOCTOR, ROLES.STAFF, ROLES.PATIENT, ROLES.LAB_TECHNICIAN],
   },
   {
     title: 'Appointments',
@@ -60,6 +62,24 @@ const menuItems = [
     icon: BedDouble,
     path: '/beds',
     roles: [ROLES.ADMIN, ROLES.STAFF],
+  },
+  {
+    title: 'Lab Requests',
+    icon: FlaskConical,
+    path: '/lab-requests',
+    roles: [ROLES.LAB_TECHNICIAN, ROLES.ADMIN],
+  },
+  {
+    title: 'My Lab Reports',
+    icon: FlaskConical,
+    path: '/my-lab-reports',
+    roles: [ROLES.PATIENT],
+  },
+  {
+    title: 'Lab Test Types',
+    icon: TestTubes,
+    path: '/lab-test-types',
+    roles: [ROLES.ADMIN],
   },
   {
     title: 'Medical Records',

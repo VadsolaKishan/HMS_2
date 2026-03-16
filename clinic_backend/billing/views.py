@@ -119,7 +119,23 @@ class BillingViewSet(viewsets.ModelViewSet):
             print(f"Error calculating bed charges: {e}")
             pass
 
-        gross_amount = float(doctor_fee) + hospital_charge + bed_charge
+        # Calculate lab charges
+        lab_charge = 0
+        try:
+            from laboratory.models import LabRequest
+            # Get completed lab requests for this patient from this appointment
+            lab_requests = LabRequest.objects.filter(
+                appointment=appointment,
+                status="COMPLETED"
+            ).select_related("test")
+
+            for lab_req in lab_requests:
+                lab_charge += float(lab_req.test.price)
+        except Exception as e:
+            print(f"Error calculating lab charges: {e}")
+            pass
+
+        gross_amount = float(doctor_fee) + hospital_charge + bed_charge + lab_charge
 
         discount_percentage = 0
         discount_amount = 0
@@ -175,6 +191,7 @@ class BillingViewSet(viewsets.ModelViewSet):
                 "bed_charge": bed_charge,
                 "bed_days": bed_days,
                 "bed_charge_per_day": bed_charge_per_day,
+                "lab_charge": lab_charge,
                 "gross_amount": gross_amount,
                 "case_type": appointment.case_type,
                 "discount_percentage": discount_percentage,
@@ -262,7 +279,22 @@ class BillingViewSet(viewsets.ModelViewSet):
             print(f"Error calculating bed charges in creation: {e}")
             pass
 
-        gross_amount = float(doctor_fee) + hospital_charge + bed_charge
+        # Calculate lab charges
+        lab_charge = 0
+        try:
+            from laboratory.models import LabRequest
+            lab_requests = LabRequest.objects.filter(
+                appointment=appointment,
+                status="COMPLETED"
+            ).select_related("test")
+
+            for lab_req in lab_requests:
+                lab_charge += float(lab_req.test.price)
+        except Exception as e:
+            print(f"Error calculating lab charges in creation: {e}")
+            pass
+
+        gross_amount = float(doctor_fee) + hospital_charge + bed_charge + lab_charge
 
         discount_percentage = 0
         discount_amount = 0
@@ -321,6 +353,7 @@ class BillingViewSet(viewsets.ModelViewSet):
             bed_charge=bed_charge,
             bed_days=bed_days,
             bed_charge_per_day=bed_charge_per_day,
+            lab_charge=lab_charge,
             discount_percentage=discount_percentage,
             discount_amount=discount_amount,
             final_amount=final_amount,
