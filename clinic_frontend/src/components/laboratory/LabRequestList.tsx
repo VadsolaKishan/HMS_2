@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { FlaskConical, Eye, Upload, X, FileText, Clock, CheckCircle2 } from 'lucide-react';
 import { labService, LabRequest } from '@/services/labService';
 import { PageLoader, ButtonLoader } from '@/components/common/Loader';
@@ -14,6 +15,8 @@ const statusConfig: Record<string, { label: string; class: string; icon: any }> 
 };
 
 export const LabRequestList = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const [requests, setRequests] = useState<LabRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>('ALL');
@@ -114,7 +117,9 @@ export const LabRequestList = () => {
                 <th className="px-6 py-3 text-muted-foreground font-medium">Doctor</th>
                 <th className="px-6 py-3 text-muted-foreground font-medium">Date</th>
                 <th className="px-6 py-3 text-muted-foreground font-medium">Status</th>
-                <th className="px-6 py-3 text-muted-foreground font-medium">Action</th>
+                {!isAdmin && (
+                  <th className="px-6 py-3 text-muted-foreground font-medium">Action</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -137,37 +142,39 @@ export const LabRequestList = () => {
                           {sc?.label || req.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          {req.status === 'REQUESTED' && (
-                            <button
-                              onClick={() => handleMarkVisited(req.id)}
-                              disabled={isMarking === req.id}
-                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
-                            >
-                              {isMarking === req.id ? <ButtonLoader /> : <><Eye className="h-3 w-3" /> Visit</>}
-                            </button>
-                          )}
-                          {(req.status === 'VISITED' || req.status === 'REQUESTED') && (
-                            <button
-                              onClick={() => setUploadModal(req)}
-                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 transition-colors"
-                            >
-                              <Upload className="h-3 w-3" /> Upload Report
-                            </button>
-                          )}
-                          {req.status === 'COMPLETED' && req.report && (
-                            <a
-                              href={req.report.report_file}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
-                            >
-                              <FileText className="h-3 w-3" /> View Report
-                            </a>
-                          )}
-                        </div>
-                      </td>
+                      {!isAdmin && (
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            {req.status === 'REQUESTED' && (
+                              <button
+                                onClick={() => handleMarkVisited(req.id)}
+                                disabled={isMarking === req.id}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+                              >
+                                {isMarking === req.id ? <ButtonLoader /> : <><Eye className="h-3 w-3" /> Visit</>}
+                              </button>
+                            )}
+                            {req.status === 'VISITED' && (
+                              <button
+                                onClick={() => setUploadModal(req)}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 transition-colors"
+                              >
+                                <Upload className="h-3 w-3" /> Upload Report
+                              </button>
+                            )}
+                            {req.status === 'COMPLETED' && req.report && (
+                              <a
+                                href={req.report.report_file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
+                              >
+                                <FileText className="h-3 w-3" /> View Report
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })
