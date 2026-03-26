@@ -12,6 +12,7 @@ export interface LabReport {
   id: number;
   lab_request: number;
   report_file: string;
+  report_file_url: string;
   notes: string;
   technician: number;
   technician_name: string;

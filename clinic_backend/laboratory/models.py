@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from cloudinary.models import CloudinaryField
 from appointments.models import Appointment
 from doctors.models import Doctor
 from patients.models import Patient
@@ -55,7 +56,7 @@ class LabReport(models.Model):
     lab_request = models.OneToOneField(
         LabRequest, on_delete=models.CASCADE, related_name="report"
     )
-    report_file = models.FileField(upload_to="lab_reports/%Y/%m/")
+    report_file = CloudinaryField("lab_report", resource_type="image", folder="lab_reports")
     notes = models.TextField(blank=True, default="")
     technician = models.ForeignKey(
         settings.AUTH_USER_MODEL,

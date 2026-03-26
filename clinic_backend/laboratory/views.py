@@ -63,8 +63,17 @@ class LabRequestViewSet(viewsets.ModelViewSet):
 
         report_file = request.FILES.get("report_file")
         if not report_file:
+            # If updating an existing report, allow notes update only if file exists
+            if hasattr(lab_request, "report") and lab_request.report.report_file:
+                report = lab_request.report
+                report.notes = request.data.get("notes", "")
+                report.technician = request.user
+                report.save()
+                lab_request.status = "COMPLETED"
+                lab_request.save()
+                return Response(LabRequestSerializer(lab_request).data)
             return Response(
-                {"error": "Report file is required"},
+                {"error": "Report file is required for new reports."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

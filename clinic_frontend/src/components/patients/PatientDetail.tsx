@@ -257,15 +257,14 @@ export const PatientDetail = () => {
                                                         </p>
                                                     )}
                                                 </div>
-                                                {report.report?.report_file && (
+                                                {report.report?.report_file_url && (
                                                     <a
-                                                        href={report.report.report_file}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
+                                                        href={report.report.report_file_url.replace('/upload/', '/upload/fl_attachment/')}
+                                                        download
                                                         className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shrink-0"
                                                     >
                                                         <Download className="h-4 w-4" />
-                                                        View Report
+                                                        Download Report
                                                     </a>
                                                 )}
                                             </div>

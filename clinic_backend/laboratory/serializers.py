@@ -13,6 +13,7 @@ class LabReportSerializer(serializers.ModelSerializer):
     technician_name = serializers.CharField(
         source="technician.full_name", read_only=True
     )
+    report_file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = LabReport
@@ -20,12 +21,18 @@ class LabReportSerializer(serializers.ModelSerializer):
             "id",
             "lab_request",
             "report_file",
+            "report_file_url",
             "notes",
             "technician",
             "technician_name",
             "uploaded_at",
         ]
         read_only_fields = ["id", "technician", "uploaded_at"]
+
+    def get_report_file_url(self, obj):
+        if obj.report_file:
+            return obj.report_file.url
+        return None
 
 
 class LabRequestSerializer(serializers.ModelSerializer):

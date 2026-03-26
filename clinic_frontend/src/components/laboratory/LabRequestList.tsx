@@ -117,9 +117,7 @@ export const LabRequestList = () => {
                 <th className="px-6 py-3 text-muted-foreground font-medium">Doctor</th>
                 <th className="px-6 py-3 text-muted-foreground font-medium">Date</th>
                 <th className="px-6 py-3 text-muted-foreground font-medium">Status</th>
-                {!isAdmin && (
-                  <th className="px-6 py-3 text-muted-foreground font-medium">Action</th>
-                )}
+                <th className="px-6 py-3 text-muted-foreground font-medium">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -142,10 +140,9 @@ export const LabRequestList = () => {
                           {sc?.label || req.status}
                         </span>
                       </td>
-                      {!isAdmin && (
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
-                            {req.status === 'REQUESTED' && (
+                            {!isAdmin && req.status === 'REQUESTED' && (
                               <button
                                 onClick={() => handleMarkVisited(req.id)}
                                 disabled={isMarking === req.id}
@@ -154,9 +151,13 @@ export const LabRequestList = () => {
                                 {isMarking === req.id ? <ButtonLoader /> : <><Eye className="h-3 w-3" /> Visit</>}
                               </button>
                             )}
-                            {req.status === 'VISITED' && (
+                            {!isAdmin && req.status === 'VISITED' && (
                               <button
-                                onClick={() => setUploadModal(req)}
+                                onClick={() => {
+                                  setReportFile(null);
+                                  setNotes('');
+                                  setUploadModal(req);
+                                }}
                                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 transition-colors"
                               >
                                 <Upload className="h-3 w-3" /> Upload Report
@@ -164,7 +165,7 @@ export const LabRequestList = () => {
                             )}
                             {req.status === 'COMPLETED' && req.report && (
                               <a
-                                href={req.report.report_file}
+                                href={req.report.report_file_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
@@ -172,9 +173,11 @@ export const LabRequestList = () => {
                                 <FileText className="h-3 w-3" /> View Report
                               </a>
                             )}
+                            {isAdmin && req.status !== 'COMPLETED' && (
+                              <span className="text-xs text-muted-foreground italic">View only</span>
+                            )}
                           </div>
                         </td>
-                      )}
                     </tr>
                   );
                 })
@@ -209,11 +212,11 @@ export const LabRequestList = () => {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Report File (PDF or Image) <span className="text-destructive">*</span>
+                Report Image <span className="text-destructive">*</span>
               </label>
               <input
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept="image/*"
                 onChange={(e) => setReportFile(e.target.files?.[0] || null)}
                 className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-primary file:text-primary-foreground file:text-sm file:font-medium hover:file:bg-primary/90"
               />
